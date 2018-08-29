@@ -37,7 +37,7 @@ public class FilmControllerTests {
 	private MockMvc mvc;
 	
 	@MockBean
-	private FilmRepository repository;
+	private FilmRepository filmRepository;
 	
 	@MockBean
 	private ShowingRepository showingRepository;
@@ -56,7 +56,7 @@ public class FilmControllerTests {
 			films.get(i).setId(i + 1);
 		}
 		
-		given(repository.findAll()).willReturn(films);
+		given(filmRepository.findAll()).willReturn(films);
 		
 		mvc.perform(get("/films").accept(MediaTypes.HAL_JSON_VALUE))
 			//.andDo(print())
@@ -81,7 +81,7 @@ public class FilmControllerTests {
 		Film film = new Film("The Shawshank Redemption", "https://m.media-amazon.com/images/M/MV5BMDFkYTc0MGEtZmNhMC00ZDIzLWFmNTEtODM1ZmRlYWMwMWFmXkEyXkFqcGdeQXVyMTMxODk2OTU@._V1_UX182_CR0,0,182,268_AL_.jpg", 142);
 		film.setId(1);
 		
-		given(repository.findById(film.getId())).willReturn(Optional.of(film));
+		given(filmRepository.findById(film.getId())).willReturn(Optional.of(film));
 		
 		mvc.perform(get("/films/" + film.getId()).accept(MediaTypes.HAL_JSON_VALUE))
 			//.andDo(print())
@@ -98,7 +98,7 @@ public class FilmControllerTests {
 	@Test
 	public void testInvalidFilm() throws Exception {
 		long id = 1;
-		given(repository.findById(id)).willReturn(Optional.empty());
+		given(filmRepository.findById(id)).willReturn(Optional.empty());
 		
 		mvc.perform(get("/films/" + id).accept(MediaTypes.HAL_JSON_VALUE))
 			//.andDo(print())
