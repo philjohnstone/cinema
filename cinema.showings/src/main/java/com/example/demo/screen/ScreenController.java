@@ -11,6 +11,7 @@ import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.Resources;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -21,7 +22,7 @@ public class ScreenController {
 	private ScreenResourceAssembler assembler;
 	
 	@Autowired
-	public ScreenController(ScreenRepository repository, ScreenResourceAssembler assembler) {
+	ScreenController(ScreenRepository repository, ScreenResourceAssembler assembler) {
 		this.repository = repository;
 		this.assembler = assembler;
 	}
@@ -33,5 +34,11 @@ public class ScreenController {
 			.collect(Collectors.toList());
 		return new Resources<>(screens,
 			linkTo(methodOn(ScreenController.class).all()).withSelfRel());
+	}
+	
+	@GetMapping("/screens/{id}")
+	Resource<Screen> one(@PathVariable long id) {
+		Screen screen = repository.findById(id).orElseThrow(() -> new ScreenNotFoundException(id));
+		return assembler.toResource(screen);
 	}
 }
