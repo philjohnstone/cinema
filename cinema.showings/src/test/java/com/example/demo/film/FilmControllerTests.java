@@ -9,6 +9,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -43,7 +44,7 @@ public class FilmControllerTests {
 	private ScreenRepository screenRepository;
 	
 	@Test
-	public void test() throws Exception {
+	public void testAllFilms() throws Exception {
 		List<Film> films = Arrays.asList(
 			new Film("The Shawshank Redemption", "https://m.media-amazon.com/images/M/MV5BMDFkYTc0MGEtZmNhMC00ZDIzLWFmNTEtODM1ZmRlYWMwMWFmXkEyXkFqcGdeQXVyMTMxODk2OTU@._V1_UX182_CR0,0,182,268_AL_.jpg", 142),
 			new Film("The Godfather", "https://m.media-amazon.com/images/M/MV5BM2MyNjYxNmUtYTAwNi00MTYxLWJmNWYtYzZlODY3ZTk3OTFlXkEyXkFqcGdeQXVyNzkwMjQ5NzM@._V1_UY268_CR3,0,182,268_AL_.jpg", 175));
@@ -73,6 +74,25 @@ public class FilmControllerTests {
 			.andReturn();
 	}
 	
+	@Test
+	public void testOneFilm() throws Exception {
+		Film film = new Film("The Shawshank Redemption", "https://m.media-amazon.com/images/M/MV5BMDFkYTc0MGEtZmNhMC00ZDIzLWFmNTEtODM1ZmRlYWMwMWFmXkEyXkFqcGdeQXVyMTMxODk2OTU@._V1_UX182_CR0,0,182,268_AL_.jpg", 142);
+		film.setId(1);
+		
+		given(repository.findById(film.getId())).willReturn(Optional.of(film));
+		
+		mvc.perform(get("/films/" + film.getId()).accept(MediaTypes.HAL_JSON_VALUE))
+			//.andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(header().string(HttpHeaders.CONTENT_TYPE, MediaTypes.HAL_JSON_VALUE + ";charset=UTF-8"))
+			.andExpect(jsonPath("$.name", is(film.getName())))
+			.andExpect(jsonPath("$.imageUrl", is(film.getImageUrl())))
+			.andExpect(jsonPath("$.durationMinutes", is((int) film.getDurationMinutes())))
+			.andExpect(jsonPath("$._links.self.href", is("http://localhost/films/" + film.getId())))
+			.andExpect(jsonPath("$._links.films.href", is("http://localhost/films")))
+			.andReturn();
+	}
+	
 	private ResultMatcher filmNameJsonPath(List<Film> films, int index) {
 		return jsonPath("$._embedded.films[" + index + "].name", is(films.get(index).getName()));
 	}
@@ -86,7 +106,7 @@ public class FilmControllerTests {
 	}
 	
 	private ResultMatcher filmSelfLinkJsonPath(List<Film> films, int index) {
-		return jsonPath("$._embedded.films[" + index + "]._links.self.href", is("http://localhost/films/" + (index + 1)));
+		return jsonPath("$._embedded.films[" + index + "]._links.self.href", is("http://localhost/films/" + films.get(index).getId()));
 	}
 	
 	private ResultMatcher filmCollectionLinkJsonPath(List<Film> films, int index) {
