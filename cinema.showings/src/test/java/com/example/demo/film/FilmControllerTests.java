@@ -3,6 +3,8 @@ package com.example.demo.film;
 import static org.hamcrest.CoreMatchers.is;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -91,6 +93,24 @@ public class FilmControllerTests {
 			.andExpect(jsonPath("$._links.self.href", is("http://localhost/films/" + film.getId())))
 			.andExpect(jsonPath("$._links.films.href", is("http://localhost/films")))
 			.andReturn();
+	}
+	
+	@Test
+	public void testInvalidFilm() throws Exception {
+		long id = 1;
+		given(repository.findById(id)).willReturn(Optional.empty());
+		
+		mvc.perform(get("/films/" + id).accept(MediaTypes.HAL_JSON_VALUE))
+			//.andDo(print())
+			.andExpect(status().isNotFound())
+			.andExpect(header().string(HttpHeaders.CONTENT_TYPE, MediaTypes.HAL_JSON_VALUE + ";charset=UTF-8"))
+			.andExpect(content().string("Could not find film with id " + id))
+			.andReturn();
+	}
+	
+	@Test
+	public void testInvalidPostToCollection() throws Exception {
+		mvc.perform(post("http://localhost/films")).andExpect(status().isMethodNotAllowed());
 	}
 	
 	private ResultMatcher filmNameJsonPath(List<Film> films, int index) {
