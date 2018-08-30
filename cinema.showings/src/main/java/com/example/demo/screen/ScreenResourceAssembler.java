@@ -13,6 +13,7 @@ public class ScreenResourceAssembler implements ResourceAssembler<Screen, Resour
 	@Override
 	public Resource<Screen> toResource(Screen entity) {
 		return new Resource<Screen>(entity,
+			linkTo(methodOn(ScreenController.class).one(entity.getId())).withSelfRel(),
 			linkTo(methodOn(ScreenController.class).all()).withRel("screens"));
 	}
 

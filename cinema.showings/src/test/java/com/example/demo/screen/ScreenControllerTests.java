@@ -3,6 +3,7 @@ package com.example.demo.screen;
 import static org.hamcrest.CoreMatchers.is;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -80,23 +81,19 @@ public class ScreenControllerTests {
 	
 	@Test
 	public void testSingleScreen() throws Exception {
-		List<Screen> screens = Arrays.asList(
-			new Screen(1, createSeats(1, 1)),
-			new Screen(2, createSeats(1, 2)),
-			new Screen(3, createSeats(1, 3)));
+		Screen screen = new Screen(1, createSeats(1, 1));
+		// ID would automatically increment with JPA
+		screen.setId(1);
 		
-		for (int i=0; i<screens.size(); i++) {
-			// ID would automatically increment with JPA
-			screens.get(i).setId(i + 1);
-			given(screenRepository.findById(screens.get(i).getId())).willReturn(Optional.of(screens.get(i)));
-		}
+		given(screenRepository.findById(screen.getId())).willReturn(Optional.of(screen));
 		
-		mvc.perform(get("/screens/" + screens.get(0).getId()).accept(MediaTypes.HAL_JSON_VALUE))
+		mvc.perform(get("/screens/" + screen.getId()).accept(MediaTypes.HAL_JSON_VALUE))
 			//.andDo(print())
 			.andExpect(status().isOk())
-			.andExpect(jsonPath("$.screenNumber", is((int) screens.get(0).getId())))
-			.andExpect(jsonPath("$.seats[0].row", is((int) screens.get(0).getSeats().get(0).getRow())))
-			.andExpect(jsonPath("$.seats[0].column", is(String.valueOf(screens.get(0).getSeats().get(0).getColumn()))))
+			.andExpect(jsonPath("$.screenNumber", is((int) screen.getId())))
+			.andExpect(jsonPath("$.seats[0].row", is((int) screen.getSeats().get(0).getRow())))
+			.andExpect(jsonPath("$.seats[0].column", is(String.valueOf(screen.getSeats().get(0).getColumn()))))
+			.andExpect(jsonPath("$._links.self.href", is("http://localhost/screens/" + screen.getId())))
 			.andExpect(jsonPath("$._links.screens.href", is("http://localhost/screens")))
 			.andReturn();
 	}
@@ -110,6 +107,11 @@ public class ScreenControllerTests {
 			.andExpect(header().string(HttpHeaders.CONTENT_TYPE, MediaTypes.HAL_JSON_VALUE + ";charset=UTF-8"))
 			.andExpect(content().string("Could not find screen with id " + id))
 			.andReturn();
+	}
+	
+	@Test
+	public void testInvalidPostToCollection() throws Exception {
+		mvc.perform(post("http://localhost/screens")).andExpect(status().isMethodNotAllowed());
 	}
 	
 	private ResultMatcher screenNumberJsonPath(List<Screen> screens, int index) {

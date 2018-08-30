@@ -1,4 +1,4 @@
-package com.example.demo.screen;
+package com.example.demo.showing;
 
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
@@ -14,28 +14,28 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-public class ScreenController {
+public class ShowingController {
 
-	private ScreenRepository repository;
-	private ScreenResourceAssembler assembler;
+	private ShowingRepository repository;
+	private ShowingResourceAssembler assembler;
 	
 	@Autowired
-	ScreenController(ScreenRepository repository, ScreenResourceAssembler assembler) {
+	public ShowingController(ShowingRepository repository, ShowingResourceAssembler assembler) {
 		this.repository = repository;
 		this.assembler = assembler;
 	}
 	
-	@GetMapping("/screens")
-	Resources<Resource<Screen>> all() {
-		List<Resource<Screen>> screens = repository.findAll().stream()
+	@GetMapping("/showings")
+	Resources<Resource<Showing>> all() {
+		List<Resource<Showing>> showings = repository.findAll().stream()
 			.map(assembler::toResource)
 			.collect(Collectors.toList());
-		return new Resources<>(screens,
-			linkTo(methodOn(ScreenController.class).all()).withSelfRel());
+		return new Resources<>(showings,
+			linkTo(methodOn(ShowingController.class).all()).withSelfRel());
 	}
 	
-	@GetMapping("/screens/{id}")
-	Resource<Screen> one(@PathVariable long id) {
-		return assembler.toResource(repository.findById(id).orElseThrow(() -> new ScreenNotFoundException(id)));
+	@GetMapping("/showings/{id}")
+	Resource<Showing> one(@PathVariable long id) {
+		return assembler.toResource(repository.findById(id).orElseThrow(() -> new ShowingNotFoundException(id)));
 	}
 }

@@ -4,6 +4,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -84,7 +85,7 @@ public class FilmControllerTests {
 		given(filmRepository.findById(film.getId())).willReturn(Optional.of(film));
 		
 		mvc.perform(get("/films/" + film.getId()).accept(MediaTypes.HAL_JSON_VALUE))
-			//.andDo(print())
+			.andDo(print())
 			.andExpect(status().isOk())
 			.andExpect(header().string(HttpHeaders.CONTENT_TYPE, MediaTypes.HAL_JSON_VALUE + ";charset=UTF-8"))
 			.andExpect(jsonPath("$.name", is(film.getName())))
